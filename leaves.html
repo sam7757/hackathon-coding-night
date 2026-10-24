@@ -1,0 +1,316 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCM Lite - Leave Requests</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f6fb;color:#202c48}
+.sidebar{position:fixed;top:0;left:0;width:230px;height:100vh;background:#202c48;padding:25px 15px;color:white}
+.sidebar h2{text-align:center;color:#12b89f;margin-bottom:10px}
+.sidebar p{text-align:center;color:#c5cede;font-size:13px;margin-bottom:30px}
+.sidebar a{display:block;color:#dce3f0;text-decoration:none;padding:13px;border-radius:7px;margin-bottom:7px;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:#34425f;color:#16d3b4}
+.main{margin-left:230px;padding:30px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+.header h1{font-size:27px;margin-bottom:8px}
+.header p{color:#788397;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:25px}
+.stat,.panel{background:white;padding:23px;border-radius:12px;box-shadow:0 3px 15px #00000008}
+.stat p{color:#788397;font-size:14px;margin-bottom:12px}
+.stat h2{font-size:29px}
+.panel{margin-bottom:22px}
+.panel h2{font-size:19px;margin-bottom:20px}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+input,select,textarea{padding:11px;border:1px solid #d6dce6;border-radius:6px;font-size:14px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#009e89}
+.toolbar input{flex:1;min-width:180px}
+.toolbar select{width:auto;min-width:140px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:850px}
+th,td{text-align:left;padding:13px 10px;border-bottom:1px solid #edf0f5;font-size:13px;vertical-align:top}
+th{background:#f5f8fc;color:#687386}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;background:#fff1d6;color:#946200}
+.badge.Approved{background:#e2f8ef;color:#08734f}
+.badge.Rejected{background:#ffeded;color:#b42318}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+button{border:0;border-radius:5px;padding:8px 10px;cursor:pointer;font-weight:bold}
+.approve{background:#e2f8ef;color:#08734f}
+.reject{background:#ffeded;color:#b42318}
+.comment{background:#e6efff;color:#285bb5}
+.empty{text-align:center;color:#788397;padding:25px}
+#notice{color:#08734f;margin-bottom:15px;font-size:14px}
+.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;padding:20px;z-index:5}
+.modal-box{background:white;padding:25px;border-radius:12px;width:100%;max-width:420px}
+.modal-box h2{margin-bottom:18px}
+.modal-box textarea{min-height:100px;resize:vertical;margin-bottom:15px}
+.modal-actions{display:flex;gap:10px}
+.primary{background:#009e89;color:white}
+.secondary{background:#e9edf4;color:#303b50}
+@media(max-width:750px){
+.sidebar{position:relative;width:100%;height:auto}
+.sidebar p{margin-bottom:15px}
+.main{margin-left:0;padding:18px}
+.stats{grid-template-columns:1fr}
+.header h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<h2>HCM Lite</h2>
+<p>Human Capital Management</p>
+<a href="admin.html">📊 Dashboard</a>
+<a href="employees.html">👥 Employees</a>
+<a href="leaves.html" class="active">📩 Leave Requests</a>
+<a href="settings.html">⚙️ Company Settings</a>
+<a href="employee.html">🧑 Employee Portal</a>
+<a href="payslip.html">💵 Payslips</a>
+</aside>
+
+<main class="main">
+<header class="header">
+<div>
+<h1>Leave Requests</h1>
+<p>Review, approve or reject employee leave applications.</p>
+</div>
+</header>
+
+<div id="notice" role="status"></div>
+
+<section class="stats">
+<div class="stat">
+<p>Total Requests</p>
+<h2 id="totalCount">0</h2>
+</div>
+<div class="stat">
+<p>Pending Requests</p>
+<h2 id="pendingCount">0</h2>
+</div>
+<div class="stat">
+<p>Approved Requests</p>
+<h2 id="approvedCount">0</h2>
+</div>
+</section>
+
+<section class="panel">
+<h2>All Leave Requests</h2>
+
+<div class="toolbar">
+<input type="search" id="search" placeholder="Search employee or leave type...">
+<select id="statusFilter">
+<option value="">All Statuses</option>
+<option value="Pending">Pending</option>
+<option value="Approved">Approved</option>
+<option value="Rejected">Rejected</option>
+</select>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Employee</th>
+<th>Leave Type</th>
+<th>From</th>
+<th>To</th>
+<th>Days</th>
+<th>Reason</th>
+<th>Status</th>
+<th>Admin Comment</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="leaveTable"></tbody>
+</table>
+</div>
+</section>
+</main>
+
+<div class="modal" id="commentModal">
+<div class="modal-box">
+<h2>Admin Comment</h2>
+<textarea id="commentText" maxlength="500" placeholder="Write a comment..."></textarea>
+<div class="modal-actions">
+<button class="primary" id="saveComment">Save Comment</button>
+<button class="secondary" id="cancelComment">Cancel</button>
+</div>
+</div>
+</div>
+
+<script>
+if(sessionStorage.getItem("hcmLoggedIn")!=="true"||
+   sessionStorage.getItem("hcmUserRole")!=="admin"){
+    window.location.replace("index.html");
+}
+
+function getData(key){
+    try{
+        const data=JSON.parse(localStorage.getItem(key)||"[]");
+        return Array.isArray(data)?data:[];
+    }catch(e){return [];}
+}
+
+function saveLeaves(data){
+    localStorage.setItem("hcmLeaves",JSON.stringify(data));
+}
+
+function notice(text){
+    document.getElementById("notice").textContent=text;
+}
+
+function dayCount(from,to){
+    if(!from||!to)return 0;
+    const start=new Date(from+"T00:00:00Z");
+    const end=new Date(to+"T00:00:00Z");
+    const days=Math.round((end-start)/86400000)+1;
+    return days>0?days:0;
+}
+
+function updateStatus(id,status){
+    const leaves=getData("hcmLeaves");
+    const index=leaves.findIndex(item=>item.id===id);
+    if(index===-1)return;
+
+    if(status==="Approved"||status==="Rejected"){
+        const action=status==="Approved"?"approve":"reject";
+        if(!confirm("Are you sure you want to "+action+" this leave request?"))return;
+    }
+
+    leaves[index].status=status;
+    leaves[index].reviewedAt=new Date().toISOString();
+    saveLeaves(leaves);
+    renderLeaves();
+    notice("Leave request updated: "+status+".");
+}
+
+let currentCommentId=null;
+
+function openComment(id){
+    currentCommentId=id;
+    const leave=getData("hcmLeaves").find(item=>item.id===id);
+    document.getElementById("commentText").value=leave?.comment||"";
+    document.getElementById("commentModal").style.display="flex";
+}
+
+function closeComment(){
+    document.getElementById("commentModal").style.display="none";
+    currentCommentId=null;
+}
+
+document.getElementById("saveComment").addEventListener("click",function(){
+    const leaves=getData("hcmLeaves");
+    const leave=leaves.find(item=>item.id===currentCommentId);
+    if(!leave)return closeComment();
+
+    leave.comment=document.getElementById("commentText").value.trim();
+    saveLeaves(leaves);
+    closeComment();
+    renderLeaves();
+    notice("Admin comment saved.");
+});
+
+document.getElementById("cancelComment").addEventListener("click",closeComment);
+
+function renderLeaves(){
+    const leaves=getData("hcmLeaves");
+    const employees=getData("hcmEmployees");
+    const query=document.getElementById("search").value.trim().toLowerCase();
+    const status=document.getElementById("statusFilter").value;
+
+    document.getElementById("totalCount").textContent=leaves.length;
+    document.getElementById("pendingCount").textContent=
+        leaves.filter(l=>l.status==="Pending").length;
+    document.getElementById("approvedCount").textContent=
+        leaves.filter(l=>l.status==="Approved").length;
+
+    const filtered=leaves.filter(leave=>{
+        const employee=employees.find(e=>e.id===leave.employeeId);
+        const employeeName=leave.employeeName||employee?.name||"Unknown Employee";
+        const searchable=(employeeName+" "+(leave.type||"")+" "+(leave.reason||"")).toLowerCase();
+        return searchable.includes(query)&&(!status||leave.status===status);
+    });
+
+    const tbody=document.getElementById("leaveTable");
+    tbody.replaceChildren();
+
+    if(filtered.length===0){
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=9;
+        cell.className="empty";
+        cell.textContent="No leave requests found.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    filtered.forEach(leave=>{
+        const employee=employees.find(e=>e.id===leave.employeeId);
+        const employeeName=leave.employeeName||employee?.name||"Unknown Employee";
+        const row=document.createElement("tr");
+
+        function cell(value){
+            const td=document.createElement("td");
+            td.textContent=value==null?"":String(value);
+            row.appendChild(td);
+            return td;
+        }
+
+        cell(employeeName);
+        cell(leave.type||"Annual Leave");
+        cell(leave.from||leave.startDate||"");
+        cell(leave.to||leave.endDate||"");
+        cell(leave.days||dayCount(leave.from||leave.startDate,leave.to||leave.endDate));
+        cell(leave.reason||"");
+
+        const statusCell=cell("");
+        const badge=document.createElement("span");
+        badge.className="badge "+(leave.status||"Pending");
+        badge.textContent=leave.status||"Pending";
+        statusCell.appendChild(badge);
+
+        cell(leave.comment||"—");
+
+        const actions=cell("");
+        const actionBox=document.createElement("div");
+        actionBox.className="actions";
+
+        if((leave.status||"Pending")==="Pending"){
+            const approve=document.createElement("button");
+            approve.className="approve";
+            approve.textContent="Approve";
+            approve.addEventListener("click",()=>updateStatus(leave.id,"Approved"));
+
+            const reject=document.createElement("button");
+            reject.className="reject";
+            reject.textContent="Reject";
+            reject.addEventListener("click",()=>updateStatus(leave.id,"Rejected"));
+
+            actionBox.append(approve,reject);
+        }
+
+        const comment=document.createElement("button");
+        comment.className="comment";
+        comment.textContent="Comment";
+        comment.addEventListener("click",()=>openComment(leave.id));
+        actionBox.appendChild(comment);
+
+        actions.appendChild(actionBox);
+        tbody.appendChild(row);
+    });
+}
+
+document.getElementById("search").addEventListener("input",renderLeaves);
+document.getElementById("statusFilter").addEventListener("change",renderLeaves);
+
+renderLeaves();
+</script>
+
+</body>
+</html>
+```

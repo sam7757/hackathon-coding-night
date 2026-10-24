@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCM Lite - Login</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f6fb;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            height: 118%;
+            max-width: 440px;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            color: #009e89;
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #687386;
+            font-size: 14px;
+        }
+
+        h2 {
+            color: #202c48;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #303b50;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d6dce6;
+            border-radius: 7px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #009e89;
+            box-shadow: 0 0 0 3px rgba(0, 158, 137, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: #009e89;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: #008472;
+        }
+
+        .switch-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #687386;
+            font-size: 14px;
+        }
+
+        .switch-text a {
+            color: #009e89;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 11px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            display: block;
+            background: #e2f8ef;
+            color: #08734f;
+        }
+
+        .error {
+            display: block;
+            background: #ffeded;
+            color: #b42318;
+        }
+
+        .note {
+            margin-top: 18px;
+            color: #7b8494;
+            font-size: 12px;
+            line-height: 1.6;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <h1>HCM Lite</h1>
+        <p>Human Capital Management System</p>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <!-- FIRST RUN SETUP -->
+    <div id="setupSection">
+        <h2>Create Your Company</h2>
+
+        <form id="setupForm">
+            <div class="form-group">
+                <label for="companyName">Company Name</label>
+                <input
+                    type="text"
+                    id="companyName"
+                    placeholder="Enter company name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="adminName">Admin Name</label>
+                <input
+                    type="text"
+                    id="adminName"
+                    placeholder="Enter admin name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="setupEmail">Admin Email</label>
+                <input
+                    type="email"
+                    id="setupEmail"
+                    placeholder="admin@example.com"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="setupPassword">Create Password</label>
+                <input
+                    type="password"
+                    id="setupPassword"
+                    placeholder="At least 8 characters"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <button type="submit">Create Company & Admin</button>
+        </form>
+
+        <p class="switch-text">
+            Already registered?
+            <a href="#" id="showLogin">Login</a>
+        </p>
+    </div>
+
+    <!-- LOGIN SECTION -->
+    <div id="loginSection" class="hidden">
+        <h2>Welcome Back</h2>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+                <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input
+                    type="password"
+                    id="loginPassword"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit">Login to HCM Lite</button>
+        </form>
+
+        <p class="switch-text">
+            First time here?
+            <a href="#" id="showSetup">Create Company</a>
+        </p>
+    </div>
+
+    <p class="note">
+        HCM Lite &copy; <span id="year"></span><br>
+        Employee Management, Attendance & Payroll
+    </p>
+
+</div>
+
+<script>
+    const setupSection = document.getElementById("setupSection");
+    const loginSection = document.getElementById("loginSection");
+    const message = document.getElementById("message");
+
+    document.getElementById("year").textContent =
+        new Date().getFullYear();
+
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "message " + type;
+    }
+
+    function clearMessage() {
+        message.textContent = "";
+        message.className = "message";
+    }
+
+    function showLoginForm() {
+        clearMessage();
+        setupSection.classList.add("hidden");
+        loginSection.classList.remove("hidden");
+    }
+
+    function showSetupForm() {
+        clearMessage();
+        loginSection.classList.add("hidden");
+        setupSection.classList.remove("hidden");
+    }
+
+    document.getElementById("showLogin").addEventListener("click", function(e) {
+        e.preventDefault();
+        showLoginForm();
+    });
+
+    document.getElementById("showSetup").addEventListener("click", function(e) {
+        e.preventDefault();
+        showSetupForm();
+    });
+
+    // Check whether company setup already exists.
+    const savedCompany = localStorage.getItem("hcmCompany");
+
+    if (savedCompany) {
+        showLoginForm();
+    }
+
+    // Create company and administrator.
+    document.getElementById("setupForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        clearMessage();
+
+        const companyName =
+            document.getElementById("companyName").value.trim();
+
+        const adminName =
+            document.getElementById("adminName").value.trim();
+
+        const email =
+            document.getElementById("setupEmail").value.trim().toLowerCase();
+
+        const password =
+            document.getElementById("setupPassword").value;
+
+        if (!companyName || !adminName || !email || password.length < 8) {
+            showMessage("Please complete all fields. Password must be at least 8 characters.", "error");
+            return;
+        }
+
+        if (localStorage.getItem("hcmCompany")) {
+            showMessage("Company setup already exists. Please log in.", "error");
+            showLoginForm();
+            return;
+        }
+
+        // Demo-only storage. Never store real passwords this way.
+        const company = {
+            name: companyName,
+            createdAt: new Date().toISOString()
+        };
+
+        const admin = {
+            name: adminName,
+            email: email,
+            password: password,
+            role: "admin"
+        };
+
+        localStorage.setItem("hcmCompany", JSON.stringify(company));
+        localStorage.setItem("hcmAdmin", JSON.stringify(admin));
+
+        showMessage("Company created successfully! Please log in.", "success");
+
+        document.getElementById("loginEmail").value = email;
+        document.getElementById("loginPassword").value = "";
+
+        document.getElementById("setupForm").reset();
+
+        setTimeout(function() {
+            showLoginForm();
+            showMessage("Your company is ready. Please log in.", "success");
+        }, 1200);
+    });
+
+    // Login and open the admin dashboard.
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        clearMessage();
+
+        const email =
+            document.getElementById("loginEmail").value.trim().toLowerCase();
+
+        const password =
+            document.getElementById("loginPassword").value;
+
+        const adminData = localStorage.getItem("hcmAdmin");
+
+        if (!adminData) {
+            showMessage("No company account found. Please create your company first.", "error");
+            showSetupForm();
+            return;
+        }
+
+        const admin = JSON.parse(adminData);
+
+        if (email === admin.email && password === admin.password) {
+            sessionStorage.setItem("hcmLoggedIn", "true");
+            sessionStorage.setItem("hcmUserRole", "admin");
+
+            window.location.href = "admin.html";
+        } else {
+            showMessage("Incorrect email or password.", "error");
+        }
+    });
+</script>
+
+</body>
+</html>

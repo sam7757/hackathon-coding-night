@@ -1,0 +1,358 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCM Lite - Manage Employees</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f6fb;color:#202c48}
+.sidebar{position:fixed;top:0;left:0;width:230px;height:100vh;background:#202c48;padding:25px 15px;color:white}
+.sidebar h2{text-align:center;color:#12b89f;margin-bottom:10px}
+.sidebar p{text-align:center;color:#c5cede;font-size:13px;margin-bottom:30px}
+.sidebar a{display:block;color:#dce3f0;text-decoration:none;padding:13px;border-radius:7px;margin-bottom:7px;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:#34425f;color:#16d3b4}
+.main{margin-left:230px;padding:30px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+.header h1{font-size:27px;margin-bottom:8px}
+.header p{color:#788397;font-size:14px}
+button{border:0;border-radius:6px;padding:10px 14px;cursor:pointer;font-weight:bold}
+.primary{background:#009e89;color:white}
+.primary:hover{background:#008472}
+.panel{background:white;padding:24px;border-radius:12px;margin-bottom:22px;box-shadow:0 3px 15px #00000008}
+.panel h2{font-size:19px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:11px;border:1px solid #d6dce6;border-radius:6px;outline:none;background:white}
+input:focus,select:focus{border-color:#009e89}
+.form-actions{margin-top:18px;display:flex;gap:10px}
+.secondary{background:#e9edf4;color:#303b50}
+.search-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.search-row input{flex:1;min-width:180px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:13px 11px;border-bottom:1px solid #edf0f5;font-size:13px}
+th{background:#f5f8fc;color:#687386}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#e2f8ef;color:#08734f;font-size:12px}
+.edit{background:#e6efff;color:#285bb5;margin-right:5px}
+.delete{background:#ffeded;color:#b42318}
+.empty{text-align:center;color:#788397;padding:25px}
+#notice{margin-bottom:15px;color:#08734f;font-size:14px}
+@media(max-width:750px){
+.sidebar{position:relative;width:100%;height:auto}
+.sidebar p{margin-bottom:15px}
+.main{margin-left:0;padding:18px}
+.form-grid{grid-template-columns:1fr}
+.header h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<h2>HCM Lite</h2>
+<p>Human Capital Management</p>
+<a href="admin.html">📊 Dashboard</a>
+<a href="employees.html" class="active">👥 Employees</a>
+<a href="leaves.html">📩 Leave Requests</a>
+<a href="settings.html">⚙️ Company Settings</a>
+<a href="employee.html">🧑 Employee Portal</a>
+<a href="payslip.html">💵 Payslips</a>
+</aside>
+
+<main class="main">
+<header class="header">
+<div>
+<h1>Manage Employees</h1>
+<p>Add, update, search and manage employee records.</p>
+</div>
+<button class="primary" onclick="showForm()">+ Add Employee</button>
+</header>
+
+<div id="notice" role="status"></div>
+
+<section class="panel" id="employeeFormPanel">
+<h2 id="formTitle">Add New Employee</h2>
+
+<form id="employeeForm">
+<input type="hidden" id="employeeId">
+
+<div class="form-grid">
+<div>
+<label for="name">Full Name *</label>
+<input id="name" required maxlength="100" placeholder="Employee full name">
+</div>
+
+<div>
+<label for="email">Email Address *</label>
+<input id="email" type="email" required maxlength="150" placeholder="employee@example.com">
+</div>
+
+<div>
+<label for="phone">Phone Number</label>
+<input id="phone" type="tel" maxlength="30" placeholder="Phone number">
+</div>
+
+<div>
+<label for="department">Department *</label>
+<input id="department" required maxlength="100" placeholder="e.g. IT, HR, Sales">
+</div>
+
+<div>
+<label for="designation">Job Title *</label>
+<input id="designation" required maxlength="100" placeholder="e.g. Developer">
+</div>
+
+<div>
+<label for="salary">Monthly Salary</label>
+<input id="salary" type="number" min="0" step="0.01" placeholder="e.g. 50000">
+</div>
+
+<div>
+<label for="joinDate">Joining Date *</label>
+<input id="joinDate" type="date" required>
+</div>
+
+<div>
+<label for="status">Employment Status</label>
+<select id="status">
+<option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+</select>
+</div>
+</div>
+
+<div class="form-actions">
+<button type="submit" class="primary" id="saveButton">Save Employee</button>
+<button type="button" class="secondary" onclick="resetForm()">Clear</button>
+</div>
+</form>
+</section>
+
+<section class="panel">
+<h2>Employee Directory</h2>
+
+<div class="search-row">
+<input id="search" type="search" placeholder="Search name, email, department...">
+<select id="filterStatus" aria-label="Filter by status">
+<option value="">All statuses</option>
+<option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+</select>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Department</th>
+<th>Job Title</th>
+<th>Salary</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="employeeTable"></tbody>
+</table>
+</div>
+</section>
+</main>
+
+<script>
+// Demo authentication: use the admin account created in index.html.
+if(sessionStorage.getItem("hcmLoggedIn")!=="true" ||
+   sessionStorage.getItem("hcmUserRole")!=="admin"){
+    window.location.replace("index.html");
+}
+
+function getEmployees(){
+    try{
+        const data=JSON.parse(localStorage.getItem("hcmEmployees")||"[]");
+        return Array.isArray(data)?data:[];
+    }catch(e){return [];}
+}
+
+function saveEmployees(data){
+    localStorage.setItem("hcmEmployees",JSON.stringify(data));
+}
+
+function showNotice(text){
+    const notice=document.getElementById("notice");
+    notice.textContent=text;
+    setTimeout(()=>{if(notice.textContent===text)notice.textContent="";},3000);
+}
+
+function showForm(){
+    document.getElementById("employeeFormPanel").scrollIntoView({behavior:"smooth"});
+    document.getElementById("name").focus();
+}
+
+function resetForm(){
+    document.getElementById("employeeForm").reset();
+    document.getElementById("employeeId").value="";
+    document.getElementById("formTitle").textContent="Add New Employee";
+    document.getElementById("saveButton").textContent="Save Employee";
+}
+
+document.getElementById("employeeForm").addEventListener("submit",function(e){
+    e.preventDefault();
+
+    const id=document.getElementById("employeeId").value;
+    const employees=getEmployees();
+
+    const employee={
+        id:id||((globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())),
+        name:document.getElementById("name").value.trim(),
+        email:document.getElementById("email").value.trim().toLowerCase(),
+        phone:document.getElementById("phone").value.trim(),
+        department:document.getElementById("department").value.trim(),
+        designation:document.getElementById("designation").value.trim(),
+        salary:Number(document.getElementById("salary").value)||0,
+        joinDate:document.getElementById("joinDate").value,
+        status:document.getElementById("status").value
+    };
+
+    if(!employee.name||!employee.email||!employee.department||
+       !employee.designation||!employee.joinDate){
+        showNotice("Please complete all required fields.");
+        return;
+    }
+
+    const duplicate=employees.some(item=>
+        item.email.toLowerCase()===employee.email&&item.id!==id
+    );
+
+    if(duplicate){
+        showNotice("This email is already registered.");
+        return;
+    }
+
+    if(id){
+        const index=employees.findIndex(item=>item.id===id);
+        if(index===-1){
+            showNotice("Employee not found. Please refresh the page.");
+            return;
+        }
+        employees[index]=employee;
+        showNotice("Employee updated successfully.");
+    }else{
+        employees.push(employee);
+        showNotice("Employee added successfully.");
+    }
+
+    saveEmployees(employees);
+    resetForm();
+    renderEmployees();
+});
+
+function editEmployee(id){
+    const employee=getEmployees().find(item=>item.id===id);
+    if(!employee)return;
+
+    document.getElementById("employeeId").value=employee.id;
+    document.getElementById("name").value=employee.name;
+    document.getElementById("email").value=employee.email;
+    document.getElementById("phone").value=employee.phone||"";
+    document.getElementById("department").value=employee.department;
+    document.getElementById("designation").value=employee.designation;
+    document.getElementById("salary").value=employee.salary||"";
+    document.getElementById("joinDate").value=employee.joinDate;
+    document.getElementById("status").value=employee.status||"Active";
+
+    document.getElementById("formTitle").textContent="Edit Employee";
+    document.getElementById("saveButton").textContent="Update Employee";
+    showForm();
+}
+
+function deleteEmployee(id){
+    const employee=getEmployees().find(item=>item.id===id);
+    if(!employee)return;
+
+    if(!confirm("Delete "+employee.name+"? This cannot be undone."))return;
+
+    saveEmployees(getEmployees().filter(item=>item.id!==id));
+    renderEmployees();
+    showNotice("Employee deleted.");
+}
+
+function renderEmployees(){
+    const query=document.getElementById("search").value.trim().toLowerCase();
+    const status=document.getElementById("filterStatus").value;
+    const employees=getEmployees();
+
+    const filtered=employees.filter(employee=>{
+        const searchable=[
+            employee.name,employee.email,employee.department,
+            employee.designation,employee.phone
+        ].join(" ").toLowerCase();
+
+        return searchable.includes(query)&&(!status||employee.status===status);
+    });
+
+    const tbody=document.getElementById("employeeTable");
+    tbody.replaceChildren();
+
+    if(filtered.length===0){
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=7;
+        cell.className="empty";
+        cell.textContent=employees.length===0
+            ?"No employees yet. Click Add Employee to get started."
+            :"No matching employees found.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    filtered.forEach(employee=>{
+        const row=document.createElement("tr");
+
+        function addCell(value){
+            const cell=document.createElement("td");
+            cell.textContent=value==null?"":String(value);
+            row.appendChild(cell);
+            return cell;
+        }
+
+        addCell(employee.name);
+        addCell(employee.email);
+        addCell(employee.department);
+        addCell(employee.designation);
+        addCell(Number(employee.salary||0).toLocaleString("en-PK"));
+
+        const statusCell=addCell("");
+        const badge=document.createElement("span");
+        badge.className="badge";
+        badge.textContent=employee.status||"Active";
+        statusCell.appendChild(badge);
+
+        const actions=addCell("");
+        const edit=document.createElement("button");
+        edit.className="edit";
+        edit.textContent="Edit";
+        edit.addEventListener("click",()=>editEmployee(employee.id));
+
+        const del=document.createElement("button");
+        del.className="delete";
+        del.textContent="Delete";
+        del.addEventListener("click",()=>deleteEmployee(employee.id));
+
+        actions.append(edit,del);
+        tbody.appendChild(row);
+    });
+}
+
+document.getElementById("search").addEventListener("input",renderEmployees);
+document.getElementById("filterStatus").addEventListener("change",renderEmployees);
+
+renderEmployees();
+</script>
+
+</body>
+</html>
+```

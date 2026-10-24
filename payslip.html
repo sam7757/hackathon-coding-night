@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCM Lite - Payslip</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f3f6fb;
+    color: #1e293b;
+}
+
+header {
+    background: #172554;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+header h1 {
+    font-size: 24px;
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.06);
+    margin-bottom: 24px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #172554;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+button {
+    padding: 11px 17px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.danger {
+    background: #dc2626;
+    color: white;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th, td {
+    padding: 13px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+th {
+    background: #eff6ff;
+}
+
+.payslip {
+    max-width: 800px;
+    margin: 25px auto;
+    border: 1px solid #cbd5e1;
+    padding: 35px;
+    background: white;
+}
+
+.slip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #172554;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.slip-header h2 {
+    margin-bottom: 8px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.info {
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.total {
+    font-size: 21px;
+    font-weight: bold;
+    color: #166534;
+}
+
+.notice {
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 15px;
+}
+
+@media print {
+    body {
+        background: white;
+    }
+
+    header, .form-card, .history-card, .no-print {
+        display: none !important;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+
+    .payslip {
+        border: none;
+        margin: 0;
+        max-width: 100%;
+        padding: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>HCM Lite — Payslips</h1>
+    <nav>
+        <a href="admin.html">Dashboard</a>
+        <a href="employees.html">Employees</a>
+        <a href="settings.html">Settings</a>
+    </nav>
+</header>
+
+<div class="container">
+
+    <section class="card form-card">
+        <h2>Generate Salary Slip</h2>
+
+        <div class="form-grid">
+            <div>
+                <label for="employeeSelect">Select Employee</label>
+                <select id="employeeSelect">
+                    <option value="">Select employee</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="month">Salary Month</label>
+                <select id="month">
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="year">Year</label>
+                <input type="number" id="year" min="2000" max="2100">
+            </div>
+
+            <div>
+                <label for="allowances">Allowances (PKR)</label>
+                <input type="number" id="allowances" min="0" value="0">
+            </div>
+
+            <div>
+                <label for="deductions">Deductions (PKR)</label>
+                <input type="number" id="deductions" min="0" value="0">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="primary" onclick="generatePayslip()">
+                Generate Payslip
+            </button>
+            <button class="secondary" onclick="window.print()">
+                Print / Save PDF
+            </button>
+        </div>
+
+        <p class="notice">
+            Salary slip generate karne se pehle employee ka basic salary
+            Employees page par add karein.
+        </p>
+    </section>
+
+    <section class="card">
+        <div id="slipArea">
+            <p>Select an employee and click Generate Payslip.</p>
+        </div>
+    </section>
+
+    <section class="card history-card">
+        <h2>Employees Salary Overview</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Basic Salary</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="salaryTable"></tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<script>
+const role = sessionStorage.getItem("hcmUserRole");
+
+if (sessionStorage.getItem("hcmLoggedIn") !== "true" ||
+    role !== "admin") {
+    window.location.href = "index.html";
+}
+
+const employees = JSON.parse(localStorage.getItem("hcmEmployees") || "[]");
+const company = JSON.parse(localStorage.getItem("hcmCompany") || "{}");
+
+const employeeSelect = document.getElementById("employeeSelect");
+const salaryTable = document.getElementById("salaryTable");
+
+document.getElementById("year").value = new Date().getFullYear();
+
+document.getElementById("month").value =
+    new Date().toLocaleString("en-US", { month: "long" });
+
+employees.forEach(function(employee) {
+    const option = document.createElement("option");
+    option.value = employee.id;
+    option.textContent = employee.name + " (" + employee.id + ")";
+    employeeSelect.appendChild(option);
+});
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[char];
+    });
+}
+
+function formatMoney(amount) {
+    return Number(amount || 0).toLocaleString("en-PK", {
+        maximumFractionDigits: 2
+    });
+}
+
+function loadSalaryOverview() {
+    salaryTable.innerHTML = "";
+
+    if (employees.length === 0) {
+        salaryTable.innerHTML =
+            '<tr><td colspan="4">No employees found. Add employees first.</td></tr>';
+        return;
+    }
+
+    employees.forEach(function(employee) {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${escapeHTML(employee.name)}</td>
+            <td>${escapeHTML(employee.department || "-")}</td>
+            <td>PKR ${formatMoney(employee.salary)}</td>
+            <td>${escapeHTML(employee.status || "Active")}</td>
+        `;
+
+        salaryTable.appendChild(row);
+    });
+}
+
+function generatePayslip() {
+    const employeeId = employeeSelect.value;
+    const month = document.getElementById("month").value;
+    const year = Number(document.getElementById("year").value);
+    const allowances = Number(document.getElementById("allowances").value);
+    const deductions = Number(document.getElementById("deductions").value);
+
+    if (!employeeId) {
+        alert("Please select an employee.");
+        return;
+    }
+
+    if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+        alert("Please enter a valid year.");
+        return;
+    }
+
+    if (!Number.isFinite(allowances) || allowances < 0 ||
+        !Number.isFinite(deductions) || deductions < 0) {
+        alert("Allowances and deductions must be zero or greater.");
+        return;
+    }
+
+    const employee = employees.find(function(item) {
+        return String(item.id) === String(employeeId);
+    });
+
+    if (!employee) {
+        alert("Employee not found.");
+        return;
+    }
+
+    const basicSalary = Number(employee.salary || 0);
+
+    if (!Number.isFinite(basicSalary) || basicSalary < 0) {
+        alert("This employee has an invalid basic salary.");
+        return;
+    }
+
+    const netSalary = basicSalary + allowances - deductions;
+    const companyName = company.companyName || company.name || "Your Company";
+
+    document.getElementById("slipArea").innerHTML = `
+        <div class="payslip">
+            <div class="slip-header">
+                <div>
+                    <h2>${escapeHTML(companyName)}</h2>
+                    <p>Employee Salary Slip</p>
+                </div>
+                <div>
+                    <strong>Pay Period</strong>
+                    <p>${escapeHTML(month)} ${year}</p>
+                    <p>Generated: ${new Date().toLocaleDateString()}</p>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom:15px;">Employee Details</h3>
+
+            <div class="info-grid">
+                <div class="info">
+                    <strong>Name:</strong>
+                    ${escapeHTML(employee.name)}
+                </div>
+                <div class="info">
+                    <strong>Employee ID:</strong>
+                    ${escapeHTML(employee.id)}
+                </div>
+                <div class="info">
+                    <strong>Department:</strong>
+                    ${escapeHTML(employee.department || "-")}
+                </div>
+                <div class="info">
+                    <strong>Designation:</strong>
+                    ${escapeHTML(employee.designation || "-")}
+                </div>
+            </div>
+
+            <h3>Earnings & Deductions</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Basic Salary</td>
+                        <td>PKR ${formatMoney(basicSalary)}</td>
+                    </tr>
+                    <tr>
+                        <td>Allowances</td>
+                        <td>PKR ${formatMoney(allowances)}</td>
+                    </tr>
+                    <tr>
+                        <td>Deductions</td>
+                        <td>PKR ${formatMoney(deductions)}</td>
+                    </tr>
+                    <tr>
+                        <th>Net Salary</th>
+                        <th class="total">PKR ${formatMoney(netSalary)}</th>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notice">
+                This is a demo payslip generated by HCM Lite.
+                Please verify salary figures before using it for payroll.
+            </p>
+
+            <div style="margin-top:45px; display:flex; justify-content:space-between; gap:30px;">
+                <div>____________________<br>Employee Signature</div>
+                <div>____________________<br>Authorized Signature</div>
+            </div>
+        </div>
+    `;
+}
+
+loadSalaryOverview();
+</script>
+
+</body>
+</html>

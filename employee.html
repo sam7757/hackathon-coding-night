@@ -1,0 +1,545 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCM Lite - Employee Dashboard</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f6fb;color:#202c48}
+.sidebar{position:fixed;left:0;top:0;width:230px;height:100vh;background:#202c48;color:white;padding:25px 15px}
+.sidebar h2{text-align:center;color:#12b89f;margin-bottom:10px}
+.sidebar p{text-align:center;color:#c5cede;font-size:13px;margin-bottom:30px}
+.sidebar a{display:block;color:#dce3f0;text-decoration:none;padding:13px;border-radius:7px;margin-bottom:7px;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:#34425f;color:#16d3b4}
+.main{margin-left:230px;padding:30px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+.header h1{font-size:27px;margin-bottom:8px}
+.header p{color:#788397;font-size:14px}
+.panel{background:white;padding:24px;border-radius:12px;margin-bottom:22px;box-shadow:0 3px 15px #00000008}
+.panel h2{font-size:19px;margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:25px}
+.card{background:white;padding:22px;border-radius:12px;border-bottom:3px solid #009e89;box-shadow:0 3px 15px #00000008}
+.card:nth-child(2){border-color:#4f7df3}
+.card:nth-child(3){border-color:#f3a536}
+.card p{color:#788397;font-size:14px;margin-bottom:12px}
+.card h3{font-size:25px;overflow-wrap:anywhere}
+.attendance-actions{display:flex;gap:12px;flex-wrap:wrap}
+button{padding:12px 17px;border:0;border-radius:7px;cursor:pointer;font-weight:bold}
+.primary{background:#009e89;color:white}
+.primary:hover{background:#008472}
+.checkout{background:#e6efff;color:#285bb5}
+.secondary{background:#e9edf4;color:#303b50}
+button:disabled{opacity:.5;cursor:not-allowed}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+label{display:block;font-weight:bold;font-size:13px;margin-bottom:7px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d6dce6;border-radius:6px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#009e89}
+textarea{resize:vertical;min-height:90px}
+.form-group{margin-bottom:16px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{text-align:left;padding:13px 10px;border-bottom:1px solid #edf0f5;font-size:13px}
+th{background:#f5f8fc;color:#687386}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#fff1d6;color:#946200;font-size:12px}
+.badge.Approved{background:#e2f8ef;color:#08734f}
+.badge.Rejected{background:#ffeded;color:#b42318}
+.badge.Completed{background:#e2f8ef;color:#08734f}
+#notice{margin-bottom:16px;font-size:14px;line-height:1.6}
+.success{color:#08734f}
+.error{color:#b42318}
+.empty{text-align:center;color:#788397;padding:22px}
+.small{color:#788397;font-size:13px;line-height:1.7}
+@media(max-width:800px){
+.sidebar{position:relative;width:100%;height:auto}
+.sidebar p{margin-bottom:15px}
+.main{margin-left:0;padding:18px}
+.cards{grid-template-columns:1fr}
+.form-grid{grid-template-columns:1fr}
+.header h1{font-size:23px}
+}
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <h2>HCM Lite</h2>
+    <p>Employee Portal</p>
+
+    <a href="employee.html" class="active">🏠 My Dashboard</a>
+    <a href="#attendance">🕒 My Attendance</a>
+    <a href="#leaveFormPanel">🏖️ Apply for Leave</a>
+    <a href="#myLeaves">📋 My Leave Requests</a>
+    <a href="payslip.html">💵 My Payslip</a>
+    <a href="admin.html">📊 Admin Dashboard</a>
+</aside>
+
+<main class="main">
+
+<header class="header">
+    <div>
+        <h1>Employee Dashboard</h1>
+        <p id="welcome">Welcome to your employee portal.</p>
+    </div>
+    <button class="secondary" id="logoutBtn">Logout</button>
+</header>
+
+<div id="notice" role="status" aria-live="polite"></div>
+
+<section class="cards">
+    <div class="card">
+        <p>Today's Attendance</p>
+        <h3 id="todayStatus">Not Checked In</h3>
+    </div>
+
+    <div class="card">
+        <p>Total Attendance Records</p>
+        <h3 id="attendanceCount">0</h3>
+    </div>
+
+    <div class="card">
+        <p>Pending Leave Requests</p>
+        <h3 id="pendingCount">0</h3>
+    </div>
+</section>
+
+<section class="panel" id="attendance">
+    <h2>🕒 My Attendance</h2>
+    <p class="small" id="currentDate"></p>
+    <br>
+
+    <div class="attendance-actions">
+        <button class="primary" id="checkInBtn">✓ Check In</button>
+        <button class="checkout" id="checkOutBtn">↗ Check Out</button>
+    </div>
+
+    <br>
+    <p class="small" id="attendanceMessage">
+        Check in when you start work and check out when you finish.
+    </p>
+</section>
+
+<section class="panel" id="leaveFormPanel">
+    <h2>🏖️ Apply for Leave</h2>
+
+    <form id="leaveForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="leaveType">Leave Type</label>
+                <select id="leaveType" required>
+                    <option value="Annual Leave">Annual Leave</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Casual Leave">Casual Leave</option>
+                    <option value="Unpaid Leave">Unpaid Leave</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="leaveFrom">From Date</label>
+                <input type="date" id="leaveFrom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="leaveTo">To Date</label>
+                <input type="date" id="leaveTo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="leaveReason">Reason</label>
+                <textarea id="leaveReason" maxlength="500"
+                    placeholder="Explain why you need leave" required></textarea>
+            </div>
+        </div>
+
+        <button class="primary" type="submit">Submit Leave Request</button>
+    </form>
+</section>
+
+<section class="panel" id="myLeaves">
+    <h2>📋 My Leave Requests</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Leave Type</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Status</th>
+                    <th>Admin Comment</th>
+                </tr>
+            </thead>
+            <tbody id="leaveTable"></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>📅 Attendance History</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Hours Worked</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTable"></tbody>
+        </table>
+    </div>
+</section>
+
+</main>
+
+<script>
+// Demo authentication.
+// Employee accounts must be configured separately for a real deployment.
+const role=sessionStorage.getItem("hcmUserRole");
+
+if(sessionStorage.getItem("hcmLoggedIn")!=="true" ||
+   !["admin","employee"].includes(role)){
+    window.location.replace("index.html");
+}
+
+function readData(key){
+    try{
+        const value=JSON.parse(localStorage.getItem(key)||"[]");
+        return Array.isArray(value)?value:[];
+    }catch(error){return [];}
+}
+
+function saveData(key,value){
+    localStorage.setItem(key,JSON.stringify(value));
+}
+
+function getCurrentEmployee(){
+    const employees=readData("hcmEmployees");
+    const employeeId=sessionStorage.getItem("hcmEmployeeId");
+
+    if(role==="employee" && employeeId){
+        return employees.find(e=>e.id===employeeId)||null;
+    }
+
+    if(role==="admin"){
+        return {
+            id:"admin-demo",
+            name:"Administrator",
+            email:"",
+            department:"Administration",
+            designation:"Administrator"
+        };
+    }
+
+    return null;
+}
+
+let currentEmployee=getCurrentEmployee();
+
+if(!currentEmployee){
+    document.getElementById("welcome").textContent=
+        "No employee account is linked to this session. Please contact your administrator.";
+    document.getElementById("checkInBtn").disabled=true;
+    document.getElementById("checkOutBtn").disabled=true;
+    document.getElementById("leaveForm").querySelector("button").disabled=true;
+}
+
+const now=new Date();
+const today=now.getFullYear()+"-"+
+    String(now.getMonth()+1).padStart(2,"0")+"-"+
+    String(now.getDate()).padStart(2,"0");
+
+document.getElementById("currentDate").textContent=
+    "Today's date: "+today;
+
+document.getElementById("leaveFrom").min=today;
+document.getElementById("leaveTo").min=today;
+
+document.getElementById("leaveFrom").addEventListener("change",function(){
+    document.getElementById("leaveTo").min=this.value||today;
+
+    if(document.getElementById("leaveTo").value &&
+       document.getElementById("leaveTo").value<this.value){
+        document.getElementById("leaveTo").value=this.value;
+    }
+});
+
+function showNotice(text,type){
+    const notice=document.getElementById("notice");
+    notice.textContent=text;
+    notice.className=type||"";
+}
+
+function dateForToday(){
+    const d=new Date();
+    return d.getFullYear()+"-"+
+        String(d.getMonth()+1).padStart(2,"0")+"-"+
+        String(d.getDate()).padStart(2,"0");
+}
+
+function timeNow(){
+    return new Date().toLocaleTimeString("en-GB",{
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+    });
+}
+
+function getMyAttendance(){
+    if(!currentEmployee)return [];
+
+    return readData("hcmAttendance").filter(record=>
+        record.employeeId===currentEmployee.id
+    );
+}
+
+function updateAttendance(){
+    if(!currentEmployee)return;
+
+    const records=getMyAttendance();
+    const currentDate=dateForToday();
+
+    const todayRecord=records.find(record=>record.date===currentDate);
+
+    document.getElementById("attendanceCount").textContent=records.length;
+
+    document.getElementById("todayStatus").textContent=
+        !todayRecord?"Not Checked In":
+        todayRecord.checkOut?"Completed":"Checked In";
+
+    document.getElementById("checkInBtn").disabled=
+        !!(todayRecord&&todayRecord.checkIn);
+
+    document.getElementById("checkOutBtn").disabled=
+        !(todayRecord&&todayRecord.checkIn&&!todayRecord.checkOut);
+
+    document.getElementById("attendanceMessage").textContent=
+        !todayRecord?"You have not checked in today.":
+        "Check-in: "+todayRecord.checkIn+
+        (todayRecord.checkOut?" | Check-out: "+todayRecord.checkOut:" | You are currently checked in.");
+
+    const tbody=document.getElementById("attendanceTable");
+    tbody.replaceChildren();
+
+    records.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(record=>{
+        const row=document.createElement("tr");
+
+        const start=record.checkIn?new Date(record.date+"T"+record.checkIn):null;
+        const end=record.checkOut?new Date(record.date+"T"+record.checkOut):null;
+
+        let hours="—";
+        if(start&&end&&end>=start){
+            hours=((end-start)/3600000).toFixed(2);
+        }
+
+        [record.date,record.checkIn||"—",record.checkOut||"—",hours].forEach(value=>{
+            const cell=document.createElement("td");
+            cell.textContent=value;
+            row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+    });
+
+    if(records.length===0){
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=4;
+        cell.className="empty";
+        cell.textContent="No attendance records yet.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+    }
+}
+
+document.getElementById("checkInBtn").addEventListener("click",function(){
+    if(!currentEmployee)return;
+
+    const records=readData("hcmAttendance");
+    const currentDate=dateForToday();
+
+    const existing=records.find(record=>
+        record.employeeId===currentEmployee.id&&record.date===currentDate
+    );
+
+    if(existing){
+        showNotice("You already have an attendance record for today.","error");
+        return;
+    }
+
+    records.push({
+        id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
+        employeeId:currentEmployee.id,
+        employeeName:currentEmployee.name,
+        date:currentDate,
+        checkIn:timeNow(),
+        checkOut:""
+    });
+
+    saveData("hcmAttendance",records);
+    updateAttendance();
+    showNotice("Check-in recorded successfully.","success");
+});
+
+document.getElementById("checkOutBtn").addEventListener("click",function(){
+    if(!currentEmployee)return;
+
+    const records=readData("hcmAttendance");
+    const currentDate=dateForToday();
+
+    const record=records.find(item=>
+        item.employeeId===currentEmployee.id&&item.date===currentDate
+    );
+
+    if(!record||!record.checkIn||record.checkOut){
+        showNotice("You cannot check out without an active check-in.","error");
+        return;
+    }
+
+    record.checkOut=timeNow();
+    saveData("hcmAttendance",records);
+    updateAttendance();
+    showNotice("Check-out recorded successfully.","success");
+});
+
+function dayCount(from,to){
+    const start=new Date(from+"T00:00:00Z");
+    const end=new Date(to+"T00:00:00Z");
+    return Math.round((end-start)/86400000)+1;
+}
+
+document.getElementById("leaveForm").addEventListener("submit",function(e){
+    e.preventDefault();
+
+    if(!currentEmployee){
+        showNotice("No employee account is linked to this session.","error");
+        return;
+    }
+
+    const from=document.getElementById("leaveFrom").value;
+    const to=document.getElementById("leaveTo").value;
+    const reason=document.getElementById("leaveReason").value.trim();
+
+    if(!from||!to||to<from||!reason){
+        showNotice("Please enter valid leave dates and a reason.","error");
+        return;
+    }
+
+    const leaves=readData("hcmLeaves");
+
+    const duplicate=leaves.some(leave=>
+        leave.employeeId===currentEmployee.id&&
+        leave.status==="Pending"&&
+        from<=(leave.to||leave.endDate||"")&&
+        to>=(leave.from||leave.startDate||"")
+    );
+
+    if(duplicate){
+        showNotice("You already have a pending request for overlapping dates.","error");
+        return;
+    }
+
+    const request={
+        id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
+        employeeId:currentEmployee.id,
+        employeeName:currentEmployee.name,
+        type:document.getElementById("leaveType").value,
+        from:from,
+        to:to,
+        days:dayCount(from,to),
+        reason:reason,
+        status:"Pending",
+        comment:"",
+        createdAt:new Date().toISOString()
+    };
+
+    leaves.push(request);
+    saveData("hcmLeaves",leaves);
+
+    this.reset();
+    document.getElementById("leaveFrom").min=today;
+    document.getElementById("leaveTo").min=today;
+
+    renderLeaves();
+    showNotice("Leave request submitted successfully.","success");
+});
+
+function renderLeaves(){
+    if(!currentEmployee)return;
+
+    const leaves=readData("hcmLeaves").filter(leave=>
+        leave.employeeId===currentEmployee.id
+    );
+
+    document.getElementById("pendingCount").textContent=
+        leaves.filter(leave=>leave.status==="Pending").length;
+
+    const tbody=document.getElementById("leaveTable");
+    tbody.replaceChildren();
+
+    leaves.slice().reverse().forEach(leave=>{
+        const row=document.createElement("tr");
+
+        const values=[
+            leave.type,
+            leave.from||leave.startDate||"",
+            leave.to||leave.endDate||"",
+            leave.days||dayCount(leave.from||leave.startDate,leave.to||leave.endDate),
+            leave.status||"Pending",
+            leave.comment||"—"
+        ];
+
+        values.forEach((value,index)=>{
+            const cell=document.createElement("td");
+
+            if(index===4){
+                const badge=document.createElement("span");
+                badge.className="badge "+String(value);
+                badge.textContent=value;
+                cell.appendChild(badge);
+            }else{
+                cell.textContent=String(value);
+            }
+
+            row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+    });
+
+    if(leaves.length===0){
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=6;
+        cell.className="empty";
+        cell.textContent="You have not submitted any leave requests.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+    }
+}
+
+if(currentEmployee){
+    document.getElementById("welcome").textContent=
+        "Welcome, "+currentEmployee.name;
+}
+
+document.getElementById("logoutBtn").addEventListener("click",function(){
+    sessionStorage.removeItem("hcmLoggedIn");
+    sessionStorage.removeItem("hcmUserRole");
+    sessionStorage.removeItem("hcmEmployeeId");
+    window.location.href="index.html";
+});
+
+updateAttendance();
+renderLeaves();
+</script>
+
+</body>
+</html>
+```
